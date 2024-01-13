@@ -22,7 +22,7 @@
           // apps.${system} or {}
         ) systems;
       };
-    
+
     lib = {
 
       flake = path: inputFile: toFile "flake.nix" (flakeSource path inputFile);
@@ -48,17 +48,22 @@
           printChild = prefix: x:
             let
               names = attrNames x;
-            in 
+            in
             if isAttrs x && length names == 1
             then "." + head names + printChild prefix x.${head names}
             else " = " + print prefix x
             ;
-        
+
           mapAttrsToList = f: attrs: attrValues (mapAttrs f attrs);
           mapAttrsToLines = f: attrs: concatStringsSep "\n" (mapAttrsToList f attrs);
           print = prefix: x:
             if isString x
             then "\"${x}\""
+            else if isList x
+            then "[ ${toString (map (el: toPretty prefix el) x)} ]"
+            else if isBool x
+            then (if x then "true" else "false")
+            else if isNull x then "null"
             else if ! isAttrs x
             then toString x
             else let prefix' = prefix + "  "; in ''
