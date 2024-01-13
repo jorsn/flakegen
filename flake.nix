@@ -59,6 +59,11 @@
           print = prefix: x:
             if isString x
             then "\"${x}\""
+            else if isList x
+            then "[ ${toString (map (el: toPretty prefix el) x)} ]"
+            else if isBool x
+            then (if x then "true" else "false")
+            else if isNull x then "null"
             else if ! isAttrs x
             then toString x
             else let prefix' = prefix + "  "; in ''
