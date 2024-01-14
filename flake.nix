@@ -45,6 +45,11 @@
 
       toPretty =
         let
+          # from nixpkgs
+          isDerivation =
+            # Value to check.
+            value: value.type or null == "derivation";
+
           printChild = prefix: x:
             let
               names = attrNames x;
@@ -64,7 +69,7 @@
             else if isBool x
             then (if x then "true" else "false")
             else if isNull x then "null"
-            else if ! isAttrs x
+            else if ! isAttrs x || isDerivation x
             then toString x
             else let prefix' = prefix + "  "; in ''
               {
