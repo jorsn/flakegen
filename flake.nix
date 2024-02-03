@@ -10,38 +10,60 @@
       path = ./template;
     };
 
-    __functor = _: path: let s = import systems; in { systems ? s, inputFile ?  "flake.in.nix", apps ? {}, ... }@outputAttrs:
+    __functor = _:
+      path':
+      inputs:
+    let
+      path = path' + (if readFileType path' == "directory" then "/flake.in.nix" else "");
+      isInputs = attrs: hasAttr "self" attrs && hasAttr "flakeSource" ((attrs.flakegen or {}).lib or {});
+      outputAttrs' =
+        if !isInputs inputs
+        then inputs # compatibility with older flakegen versions where the arg was outputAttrs
+        else maybeApply (import path).outputs inputs {
+          packages.error."Update flake inputs by running 'nix run .#genflake flake.nix'." = 1;
+          #packages = trace "\nUpdate flake inputs by running 'nix run .#genflake flake.nix'.\n" { error = 1; };
+        };
+      outputAttrs = { apps = {}; systems = import systems; } // outputAttrs';
+    in
       {
-        nextFlake = flake path inputFile;
-        nextFlakeSource = flakeSource path inputFile;
+        nextFlake = flake path;
+        nextFlakeSource = flakeSource path;
       }
       // outputAttrs
       // {
-        apps = self.lib.genAttrs (system:
+        apps = genAttrs (system:
           { genflake = { type = "app"; program = ./genflake; }; }
-          // apps.${system} or {}
-        ) systems;
+          // outputAttrs.apps.${system} or {}
+        ) outputAttrs.systems;
       };
 
     lib = {
 
-      flake = path: inputFile: toFile "flake.nix" (flakeSource path inputFile);
+      flake = path: toFile "flake.nix" (flakeSource path);
 
-      flakeSource = path: inputFile:
+      flakeSource = path:
       let
-        attrs = import (path + "/${inputFile}");
+        attrs = import path;
         attrs' = attrs // {
           inputs = { flakegen.url = "github:jorsn/flakegen"; } // (attrs.inputs or {});
           outputs = "<outputs>";
         };
       in "# Do not modify! This file is generated.\n\n"
         + replaceStrings
-          [ "\"<outputs>\"" ] [ "inputs: inputs.flakegen ./. ((import ./${inputFile}).outputs inputs)" ]
+          [ "\"<outputs>\"" ] [ "inputs: inputs.flakegen ./${baseNameOf path} inputs" ]
           (toPretty "" attrs')
         ;
 
       genAttrs = f: names:
         listToAttrs (map (name: { inherit name; value = f name; }) names);
+
+      maybeApply = f: args: default: if missingArgs f args == [] then f args else default;
+
+      # list all required args of a function 'f' that are missing in 'args'
+      missingArgs = f: args:
+        let
+          declared = functionArgs f;
+        in filter (n: !declared.${n} && !hasAttr n args) (attrNames declared);
 
       toPretty =
         let

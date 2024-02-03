@@ -5,5 +5,5 @@
 
   inputs.flakegen.url = "github:jorsn/flakegen";
 
-  outputs = { flakegen, ... }: flakegen ./. {};
+  outputs = inputs: inputs.flakegen ./flake.in.nix inputs;
 }
