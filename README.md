@@ -1,6 +1,6 @@
 # flakegen
 
-In Nix flakes, inputs must be written as pure data, without function
+In Nix flakes, inputs must be written as pure data, without functions or thunks
 (see issues [NixOS/nix#3966](https://github.com/NixOS/nix/issues/3966)
 and [NixOS/nix#4945](https://github.com/NixOS/nix/issues/4945)).
 To generate inputs with the full power of the Nix language,
