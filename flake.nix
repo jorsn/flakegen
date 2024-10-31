@@ -44,8 +44,17 @@
       flakeSource = path:
       let
         attrs = import path;
+        flakegenUrl = "github:jorsn/flakegen";
+        flakegenInput = if (hasAttr "systems" attrs.inputs) then {
+          flakegen = {
+            url = flakegenUrl;
+            inputs.systems.follows = "systems";
+          };
+        } else {
+          flakegen.url = flakegenUrl;
+        };
         attrs' = attrs // {
-          inputs = { flakegen.url = "github:jorsn/flakegen"; } // (attrs.inputs or {});
+          inputs = flakegenInput // (attrs.inputs or {});
           outputs = "<outputs>";
         };
       in "# Do not modify! This file is generated.\n\n"
