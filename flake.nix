@@ -21,6 +21,7 @@
         then inputs # compatibility with older flakegen versions where the arg was outputAttrs
         else maybeApply (import path).outputs inputs {
           packages.error."Update flake inputs by running 'nix run .#genflake flake.nix'." = 1;
+          apps = trace "Update flake inputs by running 'nix run .#genflake flake.nix'." {};
           #packages = trace "\nUpdate flake inputs by running 'nix run .#genflake flake.nix'.\n" { error = 1; };
         };
       outputAttrs = { apps = {}; systems = import systems; } // outputAttrs';
