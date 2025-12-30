@@ -44,9 +44,12 @@
 
       flakeSource = inputs: path:
       let
+        prevInputs = (import "${inputs.self}/flake.nix").inputs;
         attrs = import path;
         attrs' = attrs // {
-          inputs = { flakegen.url = "github:jorsn/flakegen"; } // (attrs.inputs or {});
+          inputs = {
+            flakegen = prevInputs.flakegen or { url = "github:jorsn/flakegen"; };
+          } // (attrs.inputs or {});
           outputs = "<outputs>";
         };
         relPathString = replaceStrings [ inputs.self.outPath ] [ "." ] (toPath path);
