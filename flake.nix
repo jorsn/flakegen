@@ -26,8 +26,8 @@
       outputAttrs = { apps = {}; systems = import systems; } // outputAttrs';
     in
       {
-        nextFlake = flake path;
-        nextFlakeSource = flakeSource path;
+        nextFlake = flake inputs path;
+        nextFlakeSource = flakeSource inputs path;
       }
       // outputAttrs
       // {
@@ -39,18 +39,19 @@
 
     lib = {
 
-      flake = path: toFile "flake.nix" (flakeSource path);
+      flake = inputs: path: toFile "flake.nix" (flakeSource inputs path);
 
-      flakeSource = path:
+      flakeSource = inputs: path:
       let
         attrs = import path;
         attrs' = attrs // {
           inputs = { flakegen.url = "github:jorsn/flakegen"; } // (attrs.inputs or {});
           outputs = "<outputs>";
         };
+        relPathString = replaceStrings [ inputs.self.outPath ] [ "." ] (toPath path);
       in "# Do not modify! This file is generated.\n\n"
         + replaceStrings
-          [ "\"<outputs>\"" ] [ "inputs: inputs.flakegen ./${baseNameOf path} inputs" ]
+          [ "\"<outputs>\"" ] [ "inputs: inputs.flakegen ${relPathString} inputs" ]
           (toPretty "" attrs')
         ;
 
