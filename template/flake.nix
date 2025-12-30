@@ -1,4 +1,5 @@
-# Do not modify! This file is generated.
+# If you use a different template than "flake.in.nix" set
+# its relative path through the first argument to inputs.flakegen.
 
 {
   description = "A very basic flake";

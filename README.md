@@ -28,6 +28,8 @@ To preview the new `flake.nix` without replacing it, run the following:
 ```
 nix run .#genflake
 ```
+If you prefer to use a different template than `flake.in.nix`, change the
+first argument of `inputs.genflake` in  `flake.nix`.
 
 
 ## Repair broken `flake.nix`
