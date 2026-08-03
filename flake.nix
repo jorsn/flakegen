@@ -33,7 +33,7 @@
       // outputAttrs
       // {
         apps = genAttrs (system:
-          { genflake = { type = "app"; program = toPath ./genflake; }; }
+          { genflake = { type = "app"; program = "${self}/genflake"; }; }
           // outputAttrs.apps.${system} or {}
         ) outputAttrs.systems;
       };
